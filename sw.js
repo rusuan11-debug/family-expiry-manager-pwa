@@ -1,23 +1,15 @@
-const CACHE_NAME = 'family-expiry-manager-v1.1.0';
+const CACHE_NAME = 'family-expiry-manager-v1.2.0';
 const APP_SHELL = [
   './', './index.html', './styles.css', './app.js', './core.js', './storage.js',
-  './ocr.js', './styles.css?v=1.1.0', './app.js?v=1.1.0',
+  './styles.css?v=1.2.0', './app.js?v=1.2.0', './barcode.bundle.js',
   './manifest.webmanifest', './assets/icon-192.png', './assets/icon-512.png',
   './assets/apple-touch-icon.png'
 ];
 
-const OCR_ASSETS = [
-  './ocr/tesseract.min.js', './ocr/worker.min.js',
-  './ocr/core/tesseract-core-lstm.wasm.js', './ocr/core/tesseract-core-lstm.wasm',
-  './ocr/core/tesseract-core-simd-lstm.wasm.js', './ocr/core/tesseract-core-simd-lstm.wasm',
-  './ocr/lang/chi_sim.traineddata.gz', './ocr/lang/eng.traineddata.gz'
-];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(APP_SHELL);
-    // OCR is packaged at the same origin, cached best-effort without breaking offline shell.
-    await Promise.allSettled(OCR_ASSETS.map(asset => cache.add(asset)));
     await self.skipWaiting();
   })());
 });
