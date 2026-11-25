@@ -10,7 +10,7 @@ on:
       - 'storage.js'
       - 'styles.css'
       - 'sw.js'
-      - 'ocr.js'
+      - 'barcode.js'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -43,7 +43,7 @@ jobs:
           test -n "$ZIP_FILE"
           mkdir _site
           unzip -q "$ZIP_FILE" -d _site
-          for file in index.html app.js core.js storage.js styles.css sw.js ocr.js; do
+          for file in index.html app.js core.js storage.js styles.css sw.js barcode.js; do
             test -s "$file"
             cp "$file" "_site/$file"
           done
@@ -59,31 +59,19 @@ jobs:
           node --check core.js
           node --check storage.js
           node --check sw.js
-          node --check ocr.js
+          node --check barcode.js
 
-      - name: Bundle local OCR engines and Chinese/English models
+      - name: Bundle local barcode scanner
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p _vendor
           cd _vendor
           npm init -y >/dev/null
-          npm install --no-save --ignore-scripts tesseract.js@6 tesseract.js-core@6
+          npm install --no-save --ignore-scripts @zxing/browser@0.1.5 @zxing/library@0.21.3 esbuild@0.25.0
           cd ..
-          mkdir -p _site/ocr/core _site/ocr/lang
-          cp _vendor/node_modules/tesseract.js/dist/tesseract.min.js _site/ocr/tesseract.min.js
-          cp _vendor/node_modules/tesseract.js/dist/worker.min.js _site/ocr/worker.min.js
-          cp _vendor/node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js _site/ocr/core/
-          cp _vendor/node_modules/tesseract.js-core/tesseract-core-lstm.wasm _site/ocr/core/
-          cp _vendor/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js _site/ocr/core/
-          cp _vendor/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm _site/ocr/core/
-          curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/chi_sim.traineddata | gzip -9n > _site/ocr/lang/chi_sim.traineddata.gz
-          curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata | gzip -9n > _site/ocr/lang/eng.traineddata.gz
-          test -s _site/ocr/tesseract.min.js
-          test -s _site/ocr/worker.min.js
-          test -s _site/ocr/core/tesseract-core-lstm.wasm
-          test -s _site/ocr/lang/chi_sim.traineddata.gz
-          test -s _site/ocr/lang/eng.traineddata.gz
+          NODE_PATH="$PWD/_vendor/node_modules" _vendor/node_modules/.bin/esbuild barcode.js --bundle --format=esm --platform=browser --target=es2020 --outfile=_site/barcode.bundle.js
+          test -s _site/barcode.bundle.js
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
