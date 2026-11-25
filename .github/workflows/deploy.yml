@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "*.zip"
-      - ".github/workflows/deploy.yml"
+      - 'family-expiry-pwa-v*.zip'
   workflow_dispatch:
 
 permissions:
@@ -29,27 +28,50 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Extract PWA source package
+      - name: Extract newest PWA release
+        shell: bash
         run: |
-          ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+          set -euo pipefail
+          ZIP_FILE="$(find . -maxdepth 1 -type f -name 'family-expiry-pwa-v*.zip' | sort -V | tail -n 1)"
           test -n "$ZIP_FILE"
           mkdir source
           unzip -q "$ZIP_FILE" -d source
           test -f source/index.html
           test -f source/manifest.webmanifest
           test -f source/sw.js
+          test -f source/ocr.js
           mkdir _site
           cp -a source/. _site/
           touch _site/.nojekyll
 
-      - name: Run application tests
+      - name: Run JavaScript and logic tests
         working-directory: source
         run: |
           npm test --if-present
           node --check app.js
           node --check core.js
           node --check storage.js
+          node --check ocr.js
           node --check sw.js
+
+      - name: Bundle local Chinese/English OCR without runtime CDN
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix source install --no-save --ignore-scripts tesseract.js@6 tesseract.js-core@6
+          mkdir -p _site/ocr/core _site/ocr/lang
+          cp source/node_modules/tesseract.js/dist/tesseract.min.js _site/ocr/tesseract.min.js
+          cp source/node_modules/tesseract.js/dist/worker.min.js _site/ocr/worker.min.js
+          cp source/node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js _site/ocr/core/
+          cp source/node_modules/tesseract.js-core/tesseract-core-lstm.wasm _site/ocr/core/
+          cp source/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js _site/ocr/core/
+          cp source/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm _site/ocr/core/
+          curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/chi_sim.traineddata | gzip -9n > _site/ocr/lang/chi_sim.traineddata.gz
+          curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata | gzip -9n > _site/ocr/lang/eng.traineddata.gz
+          test -s _site/ocr/tesseract.min.js
+          test -s _site/ocr/worker.min.js
+          test -s _site/ocr/lang/chi_sim.traineddata.gz
+          test -s _site/ocr/lang/eng.traineddata.gz
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
