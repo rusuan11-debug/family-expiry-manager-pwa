@@ -59,7 +59,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .pill.expired { background: var(--red-bg); color: var(--red); }
 .pill.normal { background: var(--green-bg); color: var(--green); }
 .empty { padding: 27px 12px; text-align: center; color: #888; border: 1px dashed #ddd; border-radius: 14px; font-size: 13px; line-height: 1.65; }
-.bottom-nav { position: fixed; z-index: 10; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,.97); border-top: 1px solid #eee; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 640px; margin: auto; backdrop-filter: blur(12px); }
+.bottom-nav { position: fixed; z-index: 10; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,.97); border-top: 1px solid #eee; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-width: 640px; margin: auto; backdrop-filter: blur(12px); }
 .nav-btn { border: 0; background: #f5f5f5; border-radius: 10px; min-height: 49px; color: #666; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; }
 .nav-btn.active { background: #fff; color: #111; font-weight: 700; }
 .nav-icon { font-size: 18px; line-height: 1; }
@@ -130,3 +130,19 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .photo-picker-label {display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center;min-height:42px;}
 .photo-scan-again {margin-top:8px;width:100%;}
 .ocr-progress {min-height:12px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;}
+
+/* PWA 1.2.0: barcode lookup, separate fridge inventory and four-tab navigation */
+.barcode-row { display:flex; align-items:flex-end; gap:8px; }
+.barcode-field { flex:1; min-width:0; margin-bottom:8px; }
+.scan-button { min-height:43px; margin-bottom:8px; white-space:nowrap; }
+.lookup-button { width:100%; }
+.scanner-modal { padding-bottom:calc(18px + env(safe-area-inset-bottom)); }
+.scanner-frame { position:relative; width:100%; aspect-ratio:1.35; background:#111; border-radius:14px; overflow:hidden; margin:12px 0; }
+.scanner-frame video { display:block; width:100%; height:100%; object-fit:cover; }
+.scanner-line { position:absolute; left:8%; right:8%; top:50%; height:2px; background:#43d17b; box-shadow:0 0 8px #43d17b; }
+.fridge-food-icon { font-size:25px; }
+.fridge-quick-add { width:100%; margin-top:10px; }
+.fridge-results { margin-top:8px; }
+.detail-copy { white-space:pre-wrap; overflow-wrap:anywhere; color:#333; font-size:13px; line-height:1.65; }
+.detail-subtitle { margin-top:16px; }
+.fridge-stats { margin-top:4px; }
