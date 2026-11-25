@@ -218,8 +218,8 @@ function renderFridge() {
     '<div class="chips">' + ['全部', ...STORAGE_MODES].map(mode =>
       '<button class="chip ' + (state.fridgeFilter === mode ? 'active' : '') + '" data-action="fridge-filter" data-filter="' + mode + '">' + mode + '</button>'
     ).join('') + '</div>' +
-    (items.length ? '<div class="product-list">' + items.map(fridgeCard).join('') + '</div>' :
-      '<div class="empty">冰箱里还没有记录<br>点击右上角「添加食物」开始记录</div>') +
+    '<div class="fridge-results">' + (items.length ? '<div class="product-list">' + items.map(fridgeCard).join('') + '</div>' :
+      '<div class="empty">冰箱里还没有记录<br>点击右上角「添加食物」开始记录</div>') + '</div>' +
     '<div class="notice">冰箱食物与「商品」分开保存。保存期限请结合食物种类、处理方式和实际冷藏温度判断。</div>';
 }
 
