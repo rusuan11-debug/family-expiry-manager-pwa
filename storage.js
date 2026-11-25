@@ -82,8 +82,8 @@ function base64ToBlob(value, type = 'image/jpeg') {
 }
 
 export async function exportBackup() {
-  const [products, profiles, customRules] = await Promise.all([
-    getAllProducts(), getSetting('profiles', null), getSetting('customRules', [])
+  const [products, profiles, customRules, fridgeItems] = await Promise.all([
+    getAllProducts(), getSetting('profiles', null), getSetting('customRules', []), getSetting('fridgeItems', [])
   ]);
   const output = [];
   for (const product of products) {
@@ -102,6 +102,7 @@ export async function exportBackup() {
     version: 1,
     exportedAt: new Date().toISOString(),
     products: output,
+    fridgeItems: Array.isArray(fridgeItems) ? fridgeItems : [],
     profiles,
     customRules
   };
@@ -133,6 +134,7 @@ export async function importBackup(backup) {
     const settings = tx.objectStore(SETTINGS_STORE);
     if (Array.isArray(backup.profiles)) settings.put({ key: 'profiles', value: backup.profiles });
     settings.put({ key: 'customRules', value: Array.isArray(backup.customRules) ? backup.customRules : [] });
+    settings.put({ key: 'fridgeItems', value: Array.isArray(backup.fridgeItems) ? backup.fridgeItems : [] });
     tx.oncomplete = () => { db.close(); resolve(products.length); };
     tx.onerror = () => { db.close(); reject(tx.error || new Error('恢复数据失败')); };
     tx.onabort = () => { db.close(); reject(tx.error || new Error('恢复已取消')); };
