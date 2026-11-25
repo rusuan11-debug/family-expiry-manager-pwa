@@ -4,7 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'family-expiry-pwa-v*.zip'
+      - 'index.html'
+      - 'app.js'
+      - 'core.js'
+      - 'storage.js'
+      - 'styles.css'
+      - 'sw.js'
+      - 'ocr.js'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -28,48 +35,53 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Extract newest PWA release
+      - name: Assemble complete PWA
         shell: bash
         run: |
           set -euo pipefail
-          ZIP_FILE="$(find . -maxdepth 1 -type f -name 'family-expiry-pwa-v*.zip' | sort -V | tail -n 1)"
+          ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
           test -n "$ZIP_FILE"
-          mkdir source
-          unzip -q "$ZIP_FILE" -d source
-          test -f source/index.html
-          test -f source/manifest.webmanifest
-          test -f source/sw.js
-          test -f source/ocr.js
           mkdir _site
-          cp -a source/. _site/
+          unzip -q "$ZIP_FILE" -d _site
+          for file in index.html app.js core.js storage.js styles.css sw.js ocr.js; do
+            test -s "$file"
+            cp "$file" "_site/$file"
+          done
           touch _site/.nojekyll
+          test -f _site/manifest.webmanifest
+          test -f _site/assets/icon-192.png
 
-      - name: Run JavaScript and logic tests
-        working-directory: source
+      - name: Run JavaScript syntax and logic tests
+        working-directory: _site
         run: |
           npm test --if-present
           node --check app.js
           node --check core.js
           node --check storage.js
-          node --check ocr.js
           node --check sw.js
+          node --check ocr.js
 
-      - name: Bundle local Chinese/English OCR without runtime CDN
+      - name: Bundle local OCR engines and Chinese/English models
         shell: bash
         run: |
           set -euo pipefail
-          npm --prefix source install --no-save --ignore-scripts tesseract.js@6 tesseract.js-core@6
+          mkdir -p _vendor
+          cd _vendor
+          npm init -y >/dev/null
+          npm install --no-save --ignore-scripts tesseract.js@6 tesseract.js-core@6
+          cd ..
           mkdir -p _site/ocr/core _site/ocr/lang
-          cp source/node_modules/tesseract.js/dist/tesseract.min.js _site/ocr/tesseract.min.js
-          cp source/node_modules/tesseract.js/dist/worker.min.js _site/ocr/worker.min.js
-          cp source/node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js _site/ocr/core/
-          cp source/node_modules/tesseract.js-core/tesseract-core-lstm.wasm _site/ocr/core/
-          cp source/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js _site/ocr/core/
-          cp source/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm _site/ocr/core/
+          cp _vendor/node_modules/tesseract.js/dist/tesseract.min.js _site/ocr/tesseract.min.js
+          cp _vendor/node_modules/tesseract.js/dist/worker.min.js _site/ocr/worker.min.js
+          cp _vendor/node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js _site/ocr/core/
+          cp _vendor/node_modules/tesseract.js-core/tesseract-core-lstm.wasm _site/ocr/core/
+          cp _vendor/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js _site/ocr/core/
+          cp _vendor/node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm _site/ocr/core/
           curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/chi_sim.traineddata | gzip -9n > _site/ocr/lang/chi_sim.traineddata.gz
           curl -fsSL --retry 3 https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata | gzip -9n > _site/ocr/lang/eng.traineddata.gz
           test -s _site/ocr/tesseract.min.js
           test -s _site/ocr/worker.min.js
+          test -s _site/ocr/core/tesseract-core-lstm.wasm
           test -s _site/ocr/lang/chi_sim.traineddata.gz
           test -s _site/ocr/lang/eng.traineddata.gz
 
