@@ -525,7 +525,7 @@ async function lookupBarcode(rawCode) {
   render();
   try {
     const fields = 'code,product_name,product_name_zh,brands,quantity,ingredients_text,ingredients_text_zh,allergens,nutriments,product_type';
-    const url = 'https://world.openfoodfacts.org/api/v3.6/product/' + encodeURIComponent(code) + '.json?fields=' + encodeURIComponent(fields);
+    const url = 'https://world.openfoodfacts.org/api/v3.6/product/' + encodeURIComponent(code) + '.json?fields=' + encodeURIComponent(fields) + '&product_type=all';
     const response = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('商品数据库暂时无法访问（HTTP ' + response.status + '）');
     const data = await response.json();
@@ -537,7 +537,18 @@ async function lookupBarcode(rawCode) {
       return;
     }
     const item = data.product;
+    const finalHost = new URL(response.url || url).hostname.toLowerCase();
+    const sourceName = finalHost.includes('openbeautyfacts') ? 'Open Beauty Facts'
+      : finalHost.includes('openproductsfacts') ? 'Open Products Facts'
+      : 'Open Food Facts';
+    const categoryText = String(item.categories || (item.categories_tags || []).join(' ') || '').toLowerCase();
+    let mappedCategory = sourceName === 'Open Beauty Facts' ? '护肤化妆品'
+      : sourceName === 'Open Products Facts' ? '日化清洁' : '食品饮料';
+    if (/baby|infant|maternal|婴幼儿|母婴|婴儿/.test(categoryText)) mappedCategory = '母婴用品';
+    else if (/cosmetic|beauty|skin care|skincare|护肤|化妆/.test(categoryText)) mappedCategory = '护肤化妆品';
+    else if (/cleaning|detergent|household cleaner|清洁|洗涤/.test(categoryText)) mappedCategory = '日化清洁';
     const productName = item.product_name_zh || item.product_name || item.generic_name_zh || item.generic_name || '';
+    if (changedCode && CATEGORIES.includes(mappedCategory)) state.draft.category = mappedCategory;
     if (changedCode || !state.draft.name) state.draft.name = productName || state.draft.name;
     if (changedCode || !state.draft.brand) state.draft.brand = item.brands || state.draft.brand;
     if (changedCode || !state.draft.quantity || state.draft.quantity === '1') state.draft.quantity = item.quantity || state.draft.quantity;
@@ -547,7 +558,7 @@ async function lookupBarcode(rawCode) {
     if (changedCode || !state.draft.allergensText) state.draft.allergensText = allergens;
     const summary = nutritionSummary(item.nutriments || {});
     if (changedCode || !state.draft.nutritionSummary) state.draft.nutritionSummary = summary;
-    state.draft.dataSource = 'Open Food Facts';
+    state.draft.dataSource = sourceName;
     state.draft.externalDataRetrievedAt = new Date().toISOString();
     state.barcodeStatus = '已找到商品资料。请核对名称、配料和营养信息，再保存。';
     render();
