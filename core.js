@@ -1,11 +1,7 @@
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 export const CATEGORIES = ['食品饮料', '母婴用品', '护肤化妆品', '日化清洁'];
-export const PHOTO_FIELDS = ['cover', 'dateLabel', 'ingredientsLabel'];
-export const PHOTO_LABELS = {
-  cover: '商品照片',
-  dateLabel: '生产日期 / 保质期标签',
-  ingredientsLabel: '配料表照片'
-};
+export const PHOTO_FIELDS = ['cover'];
+export const PHOTO_LABELS = { cover: '商品照片' };
 export const DEFAULT_PROFILES = [
   { id: 'pregnant', label: '孕妇', active: true },
   { id: 'infant', label: '婴幼儿（0–3岁）', active: true },
@@ -138,11 +134,11 @@ export function analyzeIngredients(text, profiles = DEFAULT_PROFILES, customRule
 export function makeEmptyProduct() {
   return {
     id: globalThis.crypto?.randomUUID?.() || `p_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
-    name: '', brand: '', category: CATEGORIES[0], quantity: '1',
+    name: '', brand: '', barcode: '', category: CATEGORIES[0], quantity: '1',
     purchaseDate: todayISO(), productionDate: '', shelfLifeValue: '', shelfLifeUnit: 'months',
     printedExpiryDate: '', opened: false, openedDate: '', openedShelfLifeValue: '', openedShelfLifeUnit: 'days',
-    storageLocation: '', ingredientText: '', note: '',
-    photos: { cover: null, dateLabel: null, ingredientsLabel: null },
+    storageLocation: '', ingredientText: '', allergensText: '', nutritionSummary: '', dataSource: '', note: '',
+    photos: { cover: null },
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   };
 }
