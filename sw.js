@@ -1,7 +1,7 @@
 const CACHE_NAME = 'family-expiry-manager-v1.2.0';
 const APP_SHELL = [
   './', './index.html', './styles.css', './app.js', './core.js', './storage.js',
-  './styles.css?v=1.2.0', './app.js?v=1.2.0', './barcode.bundle.js',
+  './styles.css?v=1.2.0', './app.js?v=1.2.0', './barcode.bundle.js', './barcode.bundle.js?v=1.2.0',
   './manifest.webmanifest', './assets/icon-192.png', './assets/icon-512.png',
   './assets/apple-touch-icon.png'
 ];
