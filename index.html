@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="保质期管家">
+  <meta name="description" content="记录家庭商品、保质期、配料表和照片。商品资料仅保存在本机。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <link rel="icon" href="./assets/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="./styles.css?v=1.1.0">
+  <title>家庭保质期管家</title>
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <div class="boot-screen"><div class="boot-icon">✓</div><strong>家庭保质期管家</strong><span>正在打开本地商品资料…</span></div>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input id="backup-import-input" class="visually-hidden" type="file" accept="application/json,.json">
+  <script type="module" src="./app.js?v=1.1.0"></script>
+</body>
+</html>
