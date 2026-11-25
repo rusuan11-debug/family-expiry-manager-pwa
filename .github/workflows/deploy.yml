@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "家庭保质期管家_PWA_V1.0_源码包.zip"
+      - "*.zip"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
@@ -31,9 +31,10 @@ jobs:
 
       - name: Extract PWA source package
         run: |
-          test -f "家庭保质期管家_PWA_V1.0_源码包.zip"
+          ZIP_FILE="$(find . -maxdepth 1 -type f -iname '*.zip' -print -quit)"
+          test -n "$ZIP_FILE"
           mkdir source
-          unzip -q "家庭保质期管家_PWA_V1.0_源码包.zip" -d source
+          unzip -q "$ZIP_FILE" -d source
           test -f source/index.html
           test -f source/manifest.webmanifest
           test -f source/sw.js
